@@ -50,11 +50,7 @@ function addColumnData(track) {
         return "";
     }
 
-    const rootPathArr = absolutePath.split("/");
-    rootPathArr.pop();
-    const rootPath = rootPathArr.join("/");
-
-    track.push(wavPath.replace(rootPath, ""));
+    track.push(wavPath.replace(absolutePath, ""));
 
     const tagString = getWavTags(track, wavPath)
         .join('|')
