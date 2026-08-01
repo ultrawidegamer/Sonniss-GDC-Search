@@ -140,31 +140,3 @@ function getExtraTags(target) {
         target[2]
     ]
 }
-
-// function inspectWav(wavPath) {
-//     const buffer = fs.readFileSync(wavPath);
-
-//     console.log("Header:");
-//     console.log(" RIFF:", buffer.toString("ascii", 0, 4));
-//     console.log(" WAVE:", buffer.toString("ascii", 8, 12));
-//     console.log(buffer.slice(start, start + 128).toString("hex"));
-
-//     let offset = 12;
-
-//     while (offset + 8 <= buffer.length) {
-//         const id = buffer.toString("ascii", offset, offset + 4);
-//         const size = buffer.readUInt32LE(offset + 4);
-
-//         console.log(
-//             `offset=${offset}`,
-//             `id='${id}'`,
-//             `size=${size}`,
-//             buffer.slice(offset, offset + 16).toString("hex")
-//         );
-
-//         offset += 8 + size;
-//         if (size & 1) offset++;
-//     }
-// }
-
-// inspectWav(input);
