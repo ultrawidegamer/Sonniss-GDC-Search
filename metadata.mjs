@@ -36,8 +36,7 @@ convertToCsv(updatedTracks);
 
 function convertToCsv(updatedTracks) {
     const output = updatedTracks.map(track => {
-        const data = track.map(item => `"${item}"`);
-        return data;
+        return track.map(item => `"${item}"`);
     })
 
     fs.writeFileSync(tracklistPath.replace(".csv", "-modified.csv"), output.join("\n"), "utf8");
