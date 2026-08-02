@@ -53,9 +53,15 @@ function createScrollItem(data) {
     
     item.classList.add('item')    
     item.innerHTML = `
-        <div class="trackname">${cleanTitle(data[0])}</div>
-        <div class="tracklibrary">${data[1]}</div>
-        <div class="trackcreator">${data[2]}</div>
+        <div class="trackname">
+            <div class="text">${cleanTitle(data[0])}</div>
+        </div>
+        <div class="tracklibrary">
+            <div class="text">${data[1]}</div>
+        </div>
+        <div class="trackcreator">
+            <div class="text">${data[2]}</div>
+        </div>
     `
     
     return item

@@ -6,50 +6,94 @@
     <title>Sonniss GDC Search</title>
     <style>
         :root {
-            --background-color: #080f17;
-            --primary-color: #542fda;
-            --text-color: #e0e0e0;
+            --background-color: hsl(210deg 50% 5%);
+            --primary-color: hsl(250deg 70% 50%);
+            --text-color: hsl(0deg 0% 90%);
         }
 
         body {
             background-color: var(--background-color);
             color: var(--text-color);
+            display: grid;
             font-family: sans-serif;
-            font-size: 20px;
+            font-size: 16px;
+            grid-template-rows: auto minmax(0, 1fr);
             height: 100vh;
             margin: 0;
             overflow: hidden;
         }
+        
+        .titlebar {
+            align-items: center;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            background-color: #542fda;
+            height: 60px;
+        }
 
-        body, .main, .results, .list, .item {
-            display: flex;
+        .filter {
+            background-color: #c03a98;
+        }
+
+        .selected {
+            background-color: #c05640;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: minmax(200px, 1fr) minmax(400px, 3fr) minmax(200px, 1fr);
+        }
+
+        .results {
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr);
+            overflow: hidden;
         }
 
         .content {
             overflow-y: auto;
-            min-width: 100vw;
+            overflow-x: hidden;
+            width: 100%;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .item, .columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            padding: 10px 0;
+            width: 100%;
+            border-bottom: 2px hsl(from var(--background-color) h calc(s - 20) calc(l + 10)) solid;
+        }
+
+        .item > *, .columns > * {
+            display: grid;
+            place-items: center;
+        }
+
+        .trackname {
+            grid-column: span 2;
+        }
+
+        .item .text {
+            width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .columns .text {
+            width: 90%;
         }
 
         .sentinel-top,
         .sentinel-bottom {
             height: 1px;
             width: 1px;
-        }
-
-        .item {
-            --line-height: 20px;
-            box-sizing: border-box;
-            line-height: var(--line-height);
-            margin: 10px 0;
-            max-height: calc(var(--line-height) * 3);
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .item > * {
-            flex: 1;
-            margin: 1px 10px;
-            word-break: break-word;
         }
     </style>
 </head>
@@ -62,13 +106,18 @@
     <div class="main">
         <div class="filter"></div>
         <div class="results">
-            <div class="top">
-                <div class="count"></div>
+            <div class="columns">
+                <div class="trackname">
+                    <div class="text">Track Name</div>
+                </div>
+                <div class="tracklibrary">
+                    <div class="text">Library</div>
+                </div>
+                <div class="trackcreator">
+                    <div class="text">Creator</div>
+                </div>
             </div>
-            <div class="list">
-                <div class="columns"></div>
-                <div class="content"></div>
-            </div>
+            <div class="content"></div>
         </div>
         <div class="selected"></div>
     </div>
