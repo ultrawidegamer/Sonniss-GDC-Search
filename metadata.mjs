@@ -111,8 +111,6 @@ function getWavComment(wavPath) {
 
         if (id === "bext") {
             const start = offset + 8;
-
-            // Read only the 256-byte Description field
             const description = buffer
                 .slice(start, start + Math.min(256, size))
                 .toString("ascii")

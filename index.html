@@ -7,8 +7,12 @@
     <style>
         :root {
             --background-color: hsl(210deg 50% 5%);
-            --primary-color: hsl(250deg 70% 50%);
+            --primary-color: hsl(250deg 80% 60%);
             --text-color: hsl(0deg 0% 90%);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
@@ -21,37 +25,122 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
+            padding: 10px;
         }
-        
+                
         .titlebar {
-            align-items: center;
             display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            background-color: #542fda;
+            grid-template-columns: minmax(200px, 400px) minmax(400px, 1fr) 150px;
+            align-items: center;
+            background-color: var(--background-color);
             height: 60px;
-        }
-
-        .filter {
-            background-color: #c03a98;
-        }
-
-        .selected {
-            background-color: #c05640;
+            padding: 0 10px;
+            margin-bottom: -5px;
+            margin-top: -5px;
         }
 
         .main {
             display: grid;
-            grid-template-columns: minmax(200px, 1fr) minmax(400px, 3fr) minmax(200px, 1fr);
+            grid-template-columns: minmax(200px, 400px) minmax(400px, 1fr);
+            gap: 8px;
+        }
+
+        .search {
+            position: relative;
+            display: inline-block;
+        }
+
+        .search > input {
+            width: 100%;
+            height: 100%;
+            padding: 10px 10px 10px 45px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-color);
+            outline: 2px hsl(from var(--background-color) h calc(s - 20) calc(l + 10)) solid;
+            background-color: hsl(from var(--background-color) h calc(s - 20) calc(l + 5));
+        }
+
+        .search > input:focus-visible {
+            outline: 2px hsl(from var(--background-color) h calc(s - 10) calc(l + 30)) solid;
+        }
+
+        .search > input::placeholder {
+            color: hsl(from var(--text-color) h s 40%);
+        }
+
+        .search::before {
+            content: "";
+            position: absolute;
+            left: 15px;
+            top: calc(50% - 2px);
+            width: 11px;
+            height: 11px;
+            border: 2px solid hsl(from var(--text-color) h s 40%);
+            border-radius: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .search::after {
+            content: "";
+            position: absolute;
+            left: 27px;
+            top: calc(50% + 2px);
+            width: 7px;
+            height: 2px;
+            background: hsl(from var(--text-color) h s 40%);
+            transform: rotate(45deg);
+            transform-origin: left center;
+            pointer-events: none;
+        }
+
+        .about {
+            position: relative;
+            display: inline-block;
+            padding: 12px 10px 9px 50px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .about::before {
+            content: "?";
+            position: absolute;
+            left: calc(50% - 35px);
+            top: calc(50% + 2px);
+            width: 20px;
+            height: 18px;
+            border: 2px solid var(--text-color);
+            border-radius: 50%;
+            transform: translateY(-50%);
+            text-align: center;
+            padding-top: 2px;
+            color: var(--text-color);
+        }
+
+        .filter {
+            background-color: var(--background-color);
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            padding: 10px;
+            margin: 8px 0px 0px 0px;
+            width: 100%;
+            background-color: hsl(from var(--background-color) h calc(s - 20) calc(l + 5));
         }
 
         .results {
             display: grid;
             grid-template-rows: auto minmax(0, 1fr);
             overflow: hidden;
+            border-radius: 10px;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            margin: 8px 0px -10px 0px;
         }
 
         .content {
-            overflow-y: auto;
             overflow-x: hidden;
             width: 100%;
             scrollbar-width: none;
@@ -68,11 +157,17 @@
             padding: 10px 0;
             width: 100%;
             border-bottom: 2px hsl(from var(--background-color) h calc(s - 20) calc(l + 10)) solid;
+            background-color: hsl(from var(--background-color) h calc(s - 20) calc(l + 5));
         }
 
         .item > *, .columns > * {
             display: grid;
             place-items: center;
+        }
+
+        .item:hover {
+            cursor: pointer;
+            background-color: hsl(from var(--background-color) h calc(s - 20) calc(l + 10));
         }
 
         .trackname {
@@ -95,13 +190,71 @@
             height: 1px;
             width: 1px;
         }
+
+        .title {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+            font-size: 1.2em;
+            justify-content: center;
+            cursor: pointer;
+            padding-right: 10px;
+        }
+        
+        .title > .text {
+            margin: 0 10px;
+        }
+
+        .title:hover span {
+            animation: wave 1.2s ease-in-out infinite;
+        }
+
+        .soundwave {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            height: 50px;
+        }
+
+        .soundwave span {
+            width: 5px;
+            background: var(--primary-color);
+            border-radius: 999px;
+            transform-origin: center;
+        }
+
+        .soundwave span:nth-child(1) { height: 12px; animation-delay: -0.4s; }
+        .soundwave span:nth-child(2) { height: 24px; animation-delay: -0.2s; }
+        .soundwave span:nth-child(3) { height: 40px; animation-delay: 0s; }
+        .soundwave span:nth-child(4) { height: 24px; animation-delay: -0.2s; }
+        .soundwave span:nth-child(5) { height: 12px; animation-delay: -0.4s; }
+
+        @keyframes wave {
+            0%, 100% {
+                transform: scaleY(0.8);
+            }
+            50% {
+                transform: scaleY(1.1);
+            }
+        }
     </style>
 </head>
 <body>
     <div class="titlebar">
-        <div class="title"></div>
-        <div class="search"></div>
-        <div class="about"></div>
+        <div class="title">
+            <div class="soundwave">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="text">Sonniss GDC</div>
+        </div>
+        <div class="search">
+            <input placeholder="Search sounds by name, tag, library or creator..."/>
+        </div>
+        <div class="about">About</div>
     </div>
     <div class="main">
         <div class="filter"></div>
@@ -119,8 +272,7 @@
             </div>
             <div class="content"></div>
         </div>
-        <div class="selected"></div>
     </div>
-    <script src="./js/main.js"></script>
+    <script defer src="./js/main.js"></script>
 </body>
 </html>

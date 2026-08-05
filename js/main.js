@@ -7,19 +7,23 @@ const scroller = createInfiniteScroller(contentHolder);
 function downloadTracklist(year) {
     return fetch(`./tracklists/${year}.csv`)
         .then(response => response.text())
-        .then(parseCsv);
+        .then(data => parseCsv(year, data));
 }
 
-function parseCsv(data) {
+function parseCsv(year, data) {
     const rows = data.split("\n");
     const headers = rows.shift().split(",");
-
-    return rows.map(row => {
+    const csvArr = rows.map(row => {
         return row
             .replace(/"([^"]*)"/g, (_, value) => `${value.replaceAll(",", "<COMMA>")}`)
             .split(',')
             .map(data => data.replaceAll("<COMMA>"  , ",").trim());
     });
+
+    return {
+        year,
+        csvArr
+    }
 }
 
 Promise.all([
@@ -38,20 +42,24 @@ Promise.all([
     console.error(err);
 });
 
-function addTracklist(list) {
-    AllTracklists.push(list);
-    list.forEach(addTrackToScroller);
+function addTracklist(data) {
+    AllTracklists.push(data);
+    data.csvArr.forEach(item => addTrackToScroller(data.year, item));
 }
 
-function addTrackToScroller(data) {
-    const item = createScrollItem(data);
+function addTrackToScroller(year, data) {
+    const item = createScrollItem(year, data);
     scroller.append(item)
 }
 
-function createScrollItem(data) {
+function createScrollItem(year, data) {
     const item = document.createElement('div');
+    const baseUrl = `https://archive.org/download/sonniss-gdc-${year}-game-audio-bundle-normalized`;
+    const urlNoExtension = baseUrl + encodeURIComponent(data[data.length-2])
+        .replaceAll("%2F", "/")
+        .slice(0, -4);
     
-    item.classList.add('item')    
+    item.classList.add('item')
     item.innerHTML = `
         <div class="trackname">
             <div class="text">${cleanTitle(data[0])}</div>
