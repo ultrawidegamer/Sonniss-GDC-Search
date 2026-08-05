@@ -6,7 +6,7 @@
     <title>Sonniss GDC Search</title>
     <style>
         :root {
-            --background-color: hsl(210deg 50% 5%);
+            --background-color: hsl(210deg 60% 5%);
             --primary-color: hsl(250deg 80% 60%);
             --text-color: hsl(0deg 0% 90%);
         }
@@ -96,6 +96,26 @@
             pointer-events: none;
         }
 
+        .audio {
+            display: grid;
+            justify-content: center;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 0px;
+            margin-top: 0px;
+            transition: height 0.1s ease;
+            background-color: hsl(from var(--background-color) h calc(s - 20) calc(l + 5));
+        }
+
+        .waveform {
+            max-width: 600px;
+        }
+        
+        .waveform > canvas {
+            height: 100%;
+            width: 100%;
+        }
+
         .about {
             position: relative;
             display: inline-block;
@@ -120,7 +140,6 @@
         }
 
         .filter {
-            background-color: var(--background-color);
             border-radius: 10px;
             display: grid;
             grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -135,9 +154,7 @@
             grid-template-rows: auto minmax(0, 1fr);
             overflow: hidden;
             border-radius: 10px;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-            margin: 8px 0px -10px 0px;
+            margin-top: 8px;
         }
 
         .content {
@@ -270,6 +287,14 @@
                 </div>
             </div>
             <div class="content"></div>
+        </div>
+    </div>
+    <div class="audio">
+        <div class="waveform">
+            <canvas width="600" height="100"></canvas>
+        </div>
+        <div class="playback">
+            <audio></audio>
         </div>
     </div>
     <script defer src="./js/main.js"></script>

@@ -3,7 +3,13 @@ const FilteredTracklists = [];
 
 const searchInput = document.querySelector(".search > input");
 const contentHolder = document.querySelector(".content");
+const audioWrapper = document.querySelector(".audio"); 
+const audioPlayer = document.querySelector(".playback > audio");
+const audioWaveform = document.querySelector(".waveform > canvas");
 const scroller = createInfiniteScroller(contentHolder);
+const waveformStore = {};
+let currentWaveform;
+let lastProgress = 0;
 
 const debounce = (func, delay) => {
     let timer;
@@ -115,8 +121,106 @@ function createScrollItem(year, data) {
             <div class="text">${data[2]}</div>
         </div>
     `
+
+    item.addEventListener("click", () => generateWaveformAndPlay(urlNoExtension))
     
     return item
+}
+
+function generateWaveformAndPlay(urlNoExtension) {
+    const audioContext = new AudioContext();
+    audioPlayer.paused = true;
+
+    fetch(`${urlNoExtension}.mp3`)
+        .then(data => data.arrayBuffer())
+        .then(buffer => audioContext.decodeAudioData(buffer))
+        .then(decoded => generateWaveform(urlNoExtension, decoded))
+        .then(waveform => {
+            currentWaveform = waveform;
+            drawWaveform(waveform, audioWaveform, 0);
+
+            audioPlayer.src = `${urlNoExtension}.mp3`;            
+            audioWrapper.style.marginTop = "10px";
+            audioWrapper.style.height = "100px";
+            audioPlayer.play()
+
+            updateWaveformProgress();
+        });
+}
+
+function generateWaveform(id, data) {
+    if (waveformStore[id] !== undefined) {
+        return waveformStore[id];
+    }
+
+    const channelData = data.getChannelData(0);
+    const samples = 2000;
+    const blockSize = Math.floor(channelData.length / samples);
+    const waveform = [];
+
+    for (let i = 0; i < samples; i++) {
+        let sum = 0;
+
+        for (let j = 0; j < blockSize; j++) {
+            sum += Math.abs(channelData[i * blockSize + j]);
+        }
+
+        waveform.push(sum / blockSize);
+    }
+
+    const max = Math.max(...waveform);
+    const normalizedWaveform = waveform.map(value => value / max);
+
+    waveformStore[id] = normalizedWaveform;
+    return normalizedWaveform;
+}
+
+function drawWaveform(waveform, canvas, progress = 0) {
+    const width = canvas.width;
+    const height = canvas.height;
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0, 0, width, height);
+
+    drawWaveformPart(waveform, ctx, width, height, "#3d404d");
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, width * progress, height);
+    ctx.clip();
+
+    drawWaveformPart(waveform, ctx, width, height, getComputedStyle(canvas).getPropertyValue("--primary-color"));
+    ctx.restore();
+}
+
+function drawWaveformPart(waveform, ctx, width, height, color) {
+    const centerY = height / 2;
+
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+
+    waveform.forEach((value, index) => {
+        const x = (index / waveform.length) * width;
+        const amplitude = value * height;
+
+        ctx.moveTo(x, centerY - amplitude / 2);
+        ctx.lineTo(x, centerY + amplitude / 2);
+    });
+
+    ctx.stroke();
+}
+
+function updateWaveformProgress() {
+    const progress = audioPlayer.currentTime / audioPlayer.duration;
+
+    if (Math.abs(progress - lastProgress) > 0.002) {
+        drawWaveform(currentWaveform, audioWaveform, progress);
+        lastProgress = progress;
+    }
+
+    if (!audioPlayer.paused && !audioPlayer.ended) {
+        requestAnimationFrame(updateWaveformProgress);
+    }
 }
 
 function cleanTitle(title) {
