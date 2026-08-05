@@ -129,6 +129,7 @@ function createInfiniteScroller(scrollEl, chunkSize = 200) {
     const top = document.createElement('div');
     const chunk = document.createElement('div');
     const bottom = document.createElement('div');
+    let clearing = false;
 
     top.classList.add('sentinel-top');
     chunk.classList.add('chunk');
@@ -142,7 +143,7 @@ function createInfiniteScroller(scrollEl, chunkSize = 200) {
 
     let observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
-            if (!entry.isIntersecting || bottom.previousElementSibling.previousElementSibling === top) return;
+            if (!entry.isIntersecting || clearing) return;
 
             const active = scrollEl.querySelector('[data-active=true]');
             const previous = active.previousElementSibling;
@@ -190,12 +191,17 @@ function createInfiniteScroller(scrollEl, chunkSize = 200) {
             }
         },
         clear: () => {
+            clearing = true;
             while (bottom.previousElementSibling.previousElementSibling !== top) {
-                scrollEl.removeChild(bottom.previousElementSibling)
+                scrollEl.removeChild(bottom.previousElementSibling);
             }
             while (bottom.previousElementSibling.firstChild) {
-                bottom.previousElementSibling.removeChild(bottom.previousElementSibling.lastChild)
+                bottom.previousElementSibling.removeChild(bottom.previousElementSibling.lastChild);
             }
+            bottom.previousElementSibling.dataset.active = true;
+            bottom.previousElementSibling.hidden = false;
+            top.scrollIntoView();
+            clearing = false;
         }
     }
 }
