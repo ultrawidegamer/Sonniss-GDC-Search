@@ -129,7 +129,7 @@ function getWavComment(wavPath) {
 function getExtraTags(target) {
     return [
         ...splitString(cleanComment(target[0]), " "),
-        target[1],
-        target[2]
+        target[1].replace(/\s/g, "|"),
+        target[2].replace(/\s/g, "|")
     ]
 }

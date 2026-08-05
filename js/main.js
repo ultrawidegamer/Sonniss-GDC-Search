@@ -1,8 +1,50 @@
 const AllTracklists = [];
 const FilteredTracklists = [];
 
-const contentHolder = document.querySelector(".content")
+const searchInput = document.querySelector(".search > input");
+const contentHolder = document.querySelector(".content");
 const scroller = createInfiniteScroller(contentHolder);
+
+const debounce = (func, delay) => {
+    let timer;
+
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            func(...args);
+        }, delay);
+    };
+}
+
+searchInput.addEventListener("input", debounce(searchTracklists, 500));
+
+function searchTracklists() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const terms = searchTerm.match(/"[^"]+"|\S+/g)
+        ?.filter(data => Boolean(data) && data !== "-") ?? [];
+
+    FilteredTracklists.length = 0;
+    scroller.clear();
+
+    AllTracklists.forEach(({year, csvArr}) => {
+        const arr = csvArr.filter(track => {
+            const tags = track[track.length-1].toLowerCase();
+            return terms.every(term => {
+                const negated = term.startsWith("-");
+                term = negated ? term.slice(1, Infinity) : term;
+                const quoted = term.startsWith("\"") && term.endsWith("\"");
+                term = quoted ? term.slice(1, -1).replaceAll(" ", "|") : term;                
+                const hasTag = tags.includes(term);
+
+                return negated ? !hasTag : hasTag;
+            });
+        });
+        const updated = { year, csvArr: arr }
+
+        FilteredTracklists.push(updated);
+        addTracklist(updated);
+    });
+}
 
 function downloadTracklist(year) {
     return fetch(`./tracklists/${year}.csv`)
@@ -20,10 +62,7 @@ function parseCsv(year, data) {
             .map(data => data.replaceAll("<COMMA>"  , ",").trim());
     });
 
-    return {
-        year,
-        csvArr
-    }
+    return { year, csvArr }
 }
 
 Promise.all([
@@ -37,13 +76,18 @@ Promise.all([
     downloadTracklist(2016),
     downloadTracklist(2015)
 ]).then(tracklists => {
-    tracklists.forEach(addTracklist);
+    tracklists.forEach(addAllTracklist);
 }).catch(err => {
     console.error(err);
 });
 
-function addTracklist(data) {
+function addAllTracklist(data) {
     AllTracklists.push(data);
+    FilteredTracklists.push(data);
+    addTracklist(data);
+}
+
+function addTracklist(data) {
     data.csvArr.forEach(item => addTrackToScroller(data.year, item));
 }
 
@@ -98,7 +142,7 @@ function createInfiniteScroller(scrollEl, chunkSize = 200) {
 
     let observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
-            if (!entry.isIntersecting) return;
+            if (!entry.isIntersecting || bottom.previousElementSibling.previousElementSibling === top) return;
 
             const active = scrollEl.querySelector('[data-active=true]');
             const previous = active.previousElementSibling;
@@ -143,6 +187,14 @@ function createInfiniteScroller(scrollEl, chunkSize = 200) {
                 chunk.hidden = true;
 
                 lastChunk.after(chunk);
+            }
+        },
+        clear: () => {
+            while (bottom.previousElementSibling.previousElementSibling !== top) {
+                scrollEl.removeChild(bottom.previousElementSibling)
+            }
+            while (bottom.previousElementSibling.firstChild) {
+                bottom.previousElementSibling.removeChild(bottom.previousElementSibling.lastChild)
             }
         }
     }
