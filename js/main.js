@@ -1,6 +1,5 @@
 const AllTracklists = [];
 const FilteredTracklists = [];
-
 const searchInput = document.querySelector(".search > input");
 const contentHolder = document.querySelector(".content");
 const audioWrapper = document.querySelector(".audio"); 
@@ -10,6 +9,8 @@ const scroller = createInfiniteScroller(contentHolder);
 const waveformStore = {};
 let currentWaveform;
 let lastProgress = 0;
+let lastPlaystate;
+let resumeTime = 0;
 
 const debounce = (func, delay) => {
     let timer;
@@ -23,6 +24,10 @@ const debounce = (func, delay) => {
 }
 
 searchInput.addEventListener("input", debounce(searchTracklists, 500));
+audioPlayer.addEventListener("play", () => playAudio(lastPlaystate));
+audioPlayer.addEventListener("pause", () => pauseAudio(lastPlaystate));
+audioPlayer.addEventListener("canplaythrough", () => startAudio());
+audioPlayer.addEventListener("ended", () => stopAudio(lastPlaystate));
 
 function searchTracklists() {
     const searchTerm = searchInput.value.trim().toLowerCase();
@@ -111,6 +116,11 @@ function createScrollItem(year, data) {
     
     item.classList.add('item')
     item.innerHTML = `
+        <div class="playstate">
+            <div class="playbutton"></div>
+            <div class="pausebutton"></div>
+            <div class="loadingspinner"></div>
+        </div>
         <div class="trackname">
             <div class="text">${cleanTitle(data[0])}</div>
         </div>
@@ -122,30 +132,92 @@ function createScrollItem(year, data) {
         </div>
     `
 
-    item.addEventListener("click", () => generateWaveformAndPlay(urlNoExtension))
+    item.addEventListener("click", () => {
+        const state = item.querySelector(".playstate");
+
+        if (lastPlaystate === state) {
+            if (audioPlayer.paused) {
+                audioPlayer.play()
+            } else { 
+                audioPlayer.pause()
+            }
+        } else {
+            generateWaveformAndPlay(state, urlNoExtension);
+        }  
+    })
     
     return item
 }
 
-function generateWaveformAndPlay(urlNoExtension) {
-    const audioContext = new AudioContext();
-    audioPlayer.paused = true;
+function startAudio() {
+    resumeTime = 0;
 
-    fetch(`${urlNoExtension}.mp3`)
+    audioPlayer.play()
+        .catch(error => {
+            if (error.name === "AbortError") return;
+            console.error(error);
+        });
+    
+    updateWaveformProgress()
+}
+
+function playAudio(state) {
+    audioPlayer.currentTime = resumeTime;
+    updateWaveformProgress()
+
+    if (state === undefined) return;
+
+    state.classList.remove("loading");
+    state.classList.add("playing");
+    
+}
+
+function pauseAudio(state) {
+    resumeTime = audioPlayer.currentTime;
+
+    if (state === undefined) return;
+
+    state.classList.remove("playing");
+    state.classList.remove("loading");
+}
+
+function stopAudio(state) {
+    if (state !== undefined) {
+        state.classList.remove("playing");
+        state.classList.remove("loading");
+    }
+
+    audioPlayer.src = "";
+    lastPlaystate = undefined;
+}
+
+function generateWaveformAndPlay(state, urlNoExtension) {
+    const audioContext = new AudioContext();
+    const audioUrl = `${urlNoExtension}.mp3`;
+
+    if (lastPlaystate !== undefined) {
+        stopAudio(lastPlaystate);
+    }
+
+    lastPlaystate = state;
+    state.classList.add("loading");
+
+    fetch(audioUrl)
         .then(data => data.arrayBuffer())
         .then(buffer => audioContext.decodeAudioData(buffer))
         .then(decoded => generateWaveform(urlNoExtension, decoded))
         .then(waveform => {
             currentWaveform = waveform;
             drawWaveform(waveform, audioWaveform, 0);
-
-            audioPlayer.src = `${urlNoExtension}.mp3`;            
+       
             audioWrapper.style.marginTop = "10px";
             audioWrapper.style.height = "100px";
-            audioPlayer.play()
 
-            updateWaveformProgress();
-        });
+            audioPlayer.src = audioUrl;
+        })
+        .catch(error => {
+            stopAudio(lastPlaystate);
+        })
 }
 
 function generateWaveform(id, data) {

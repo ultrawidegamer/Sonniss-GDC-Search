@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico"/>
     <title>Sonniss GDC Search</title>
     <style>
         :root {
@@ -58,12 +59,12 @@
             border: none;
             border-radius: 8px;
             color: var(--text-color);
-            outline: 2px hsl(from var(--background-color) h calc(s - 20) calc(l + 10)) solid;
+            outline: 2px solid hsl(from var(--background-color) h calc(s - 20) calc(l + 10));
             background-color: hsl(from var(--background-color) h calc(s - 20) calc(l + 5));
         }
 
         .search > input:focus-visible {
-            outline: 2px hsl(from var(--background-color) h calc(s - 10) calc(l + 30)) solid;
+            outline: 2px solid hsl(from var(--background-color) h calc(s - 10) calc(l + 30));
         }
 
         .search > input::placeholder {
@@ -106,16 +107,7 @@
             transition: height 0.1s ease;
             background-color: hsl(from var(--background-color) h calc(s - 20) calc(l + 5));
         }
-
-        .waveform {
-            max-width: 600px;
-        }
         
-        .waveform > canvas {
-            height: 100%;
-            width: 100%;
-        }
-
         .about {
             position: relative;
             display: inline-block;
@@ -137,6 +129,10 @@
             text-align: center;
             padding-top: 2px;
             color: var(--text-color);
+        }
+
+        .aboutinfo {
+            display: none;
         }
 
         .filter {
@@ -170,10 +166,10 @@
 
         .item, .columns {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-columns: 60px 1fr 1fr 1fr 1fr;
             padding: 10px 0;
             width: 100%;
-            border-bottom: 2px hsl(from var(--background-color) h calc(s - 20) calc(l + 10)) solid;
+            border-bottom: 2px solid hsl(from var(--background-color) h calc(s - 20) calc(l + 10));
             background-color: hsl(from var(--background-color) h calc(s - 20) calc(l + 5));
         }
 
@@ -187,8 +183,109 @@
             background-color: hsl(from var(--background-color) h calc(s - 20) calc(l + 10));
         }
 
+        .item:hover .text {
+            color: hsl(from var(--text-color) h s calc(l - 10));
+        }
+        
+        .item:hover .playbutton {
+            border: 2px solid hsl(from var(--primary-color) h s calc(l - 3));
+        }
+
+        .item:hover .playbutton::before {
+            border-left: solid 12px hsl(from var(--primary-color) h s calc(l - 3));
+        }
+
+        .playbutton {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            position: relative;
+            margin: auto;
+        }
+
+        .playbutton::before {
+            content: "";
+            position: absolute;
+            left: 9px;
+            top: 5px;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 12px solid var(--primary-color);
+        }
+
+        .pausebutton {
+            display: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            position: relative;
+            margin: auto;
+        }
+
+        .pausebutton::before,
+        .pausebutton::after {
+            content: "";
+            position: absolute;
+            top: 6px;
+            width: 4px;
+            height: 14px;
+            background: var(--primary-color);
+            border-radius: 1px;
+        }
+
+        .pausebutton::before {
+            left: 7px;
+        }
+
+        .pausebutton::after {
+            right: 7px;
+        }
+
+        .loadingspinner {
+            display: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            position: relative;
+            margin: auto;
+        }
+
+        .loadingspinner::before {
+            content: "";
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: loading-spin 0.8s linear infinite;
+        }
+
+        @keyframes loading-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .playstate.loading .playbutton, .playstate.playing .playbutton {
+            display: none;
+        }
+
+        .playstate.playing .pausebutton {
+            display: block;
+        }
+
+        .playstate.loading .loadingspinner {
+            display: block;
+        }
+
         .trackname {
             grid-column: span 2;
+            place-items: initial;
         }
 
         .item .text {
@@ -196,6 +293,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            align-self: center;
         }
 
         .columns .text {
@@ -270,12 +368,24 @@
         <div class="search">
             <input placeholder="Search sounds by name, tag, library or creator..."/>
         </div>
-        <div class="about">About</div>
+        <div class="about">
+            <div>About</div>
+            <div class="aboutinfo">
+                unoffcial website to search the Sonniss GDC audio files
+                made by ultrawidegamer
+                
+                audio hosted on the internet archive with link
+                
+                github repo button
+                sonniss gdc button
+            </div>
+        </div>
     </div>
     <div class="main">
         <div class="filter"></div>
         <div class="results">
             <div class="columns">
+                <div class="playstatespacer"></div>
                 <div class="trackname">
                     <div class="text">Track Name</div>
                 </div>
