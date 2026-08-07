@@ -4,7 +4,9 @@ const searchInput = document.querySelector(".search > input");
 const contentHolder = document.querySelector(".content");
 const audioWrapper = document.querySelector(".audio"); 
 const audioPlayer = document.querySelector(".playback > audio");
-const audioWaveform = document.querySelector(".waveform > canvas");
+const audioWaveform = document.querySelector(".waveform");
+const waveformCanvas = document.querySelector(".waveform > canvas");
+const downloadButton = document.querySelector(".download");
 const scroller = createInfiniteScroller(contentHolder);
 const waveformStore = {};
 let currentWaveform;
@@ -163,6 +165,8 @@ function startAudio() {
 
 function playAudio(state) {
     audioPlayer.currentTime = resumeTime;
+    audioWrapper.classList.add("playing")
+
     updateWaveformProgress()
 
     if (state === undefined) return;
@@ -186,7 +190,8 @@ function stopAudio(state) {
         state.classList.remove("playing");
         state.classList.remove("loading");
     }
-
+    
+    audioWrapper.classList.remove("playing")
     audioPlayer.src = "";
     lastPlaystate = undefined;
 }
@@ -194,6 +199,8 @@ function stopAudio(state) {
 function generateWaveformAndPlay(state, urlNoExtension) {
     const audioContext = new AudioContext();
     const audioUrl = `${urlNoExtension}.mp3`;
+
+    downloadButton.href = audioUrl;
 
     if (lastPlaystate !== undefined) {
         stopAudio(lastPlaystate);
@@ -208,11 +215,9 @@ function generateWaveformAndPlay(state, urlNoExtension) {
         .then(decoded => generateWaveform(urlNoExtension, decoded))
         .then(waveform => {
             currentWaveform = waveform;
-            drawWaveform(waveform, audioWaveform, 0);
+            drawWaveform(waveform, waveformCanvas, 0);
        
-            audioWrapper.style.marginTop = "10px";
-            audioWrapper.style.height = "100px";
-
+            audioWrapper.classList.add("played");
             audioPlayer.src = audioUrl;
         })
         .catch(error => {
@@ -226,7 +231,7 @@ function generateWaveform(id, data) {
     }
 
     const channelData = data.getChannelData(0);
-    const samples = 2000;
+    const samples = 200;
     const blockSize = Math.floor(channelData.length / samples);
     const waveform = [];
 
@@ -254,14 +259,15 @@ function drawWaveform(waveform, canvas, progress = 0) {
 
     ctx.clearRect(0, 0, width, height);
 
-    drawWaveformPart(waveform, ctx, width, height, "#3d404d");
+    drawWaveformPart(waveform, ctx, width, height, "hsl(0deg 0% 50%)");
 
     ctx.save();
     ctx.beginPath();
     ctx.rect(0, 0, width * progress, height);
     ctx.clip();
 
-    drawWaveformPart(waveform, ctx, width, height, getComputedStyle(canvas).getPropertyValue("--primary-color"));
+    drawWaveformPart(waveform, ctx, width, height, "hsl(250 100% 62% / 1)");
+
     ctx.restore();
 }
 
@@ -286,8 +292,9 @@ function updateWaveformProgress() {
     const progress = audioPlayer.currentTime / audioPlayer.duration;
 
     if (Math.abs(progress - lastProgress) > 0.002) {
-        drawWaveform(currentWaveform, audioWaveform, progress);
+        drawWaveform(currentWaveform, waveformCanvas, progress);
         lastProgress = progress;
+        audioWaveform.style.setProperty('--progress', `${progress*100}%`);
     }
 
     if (!audioPlayer.paused && !audioPlayer.ended) {
