@@ -8,7 +8,9 @@ const audioWaveform = document.querySelector(".waveform");
 const waveformCanvas = document.querySelector(".waveform > canvas");
 const downloadButton = document.querySelector(".download");
 const scroller = createInfiniteScroller(contentHolder);
+const audioContext = new AudioContext();
 const waveformStore = {};
+const audioUrlStore = {};
 let currentWaveform;
 let lastProgress = 0;
 let lastPlaystate;
@@ -197,10 +199,7 @@ function stopAudio(state) {
 }
 
 function generateWaveformAndPlay(state, urlNoExtension) {
-    const audioContext = new AudioContext();
     const audioUrl = `${urlNoExtension}.mp3`;
-
-    downloadButton.href = audioUrl;
 
     if (lastPlaystate !== undefined) {
         stopAudio(lastPlaystate);
@@ -209,27 +208,50 @@ function generateWaveformAndPlay(state, urlNoExtension) {
     lastPlaystate = state;
     state.classList.add("loading");
 
-    fetch(audioUrl)
-        .then(data => data.arrayBuffer())
-        .then(buffer => audioContext.decodeAudioData(buffer))
-        .then(decoded => generateWaveform(urlNoExtension, decoded))
+    fetchWaveformData(urlNoExtension)
         .then(waveform => {
+            const cachedUrl = getCachedAudioUrl(audioUrl);
+
             currentWaveform = waveform;
             drawWaveform(waveform, waveformCanvas, 0);
        
             audioWrapper.classList.add("played");
-            audioPlayer.src = audioUrl;
+            audioPlayer.src = cachedUrl;
+            downloadButton.href = cachedUrl;
         })
         .catch(error => {
             stopAudio(lastPlaystate);
         })
 }
 
-function generateWaveform(id, data) {
-    if (waveformStore[id] !== undefined) {
-        return waveformStore[id];
+function addUrlToCache(audioUrl, data) {
+    audioUrlStore[audioUrl] = data.url
+    return data;
+}
+
+function getCachedAudioUrl(audioUrl) {
+    return audioUrlStore[audioUrl] ?? audioUrl;
+}
+
+function fetchWaveformData(urlNoExtension) {
+    if (waveformStore[urlNoExtension] !== undefined) { 
+        return Promise.resolve(waveformStore[urlNoExtension])
     }
 
+    const audioUrl = `${urlNoExtension}.mp3`;
+    const cachedUrl = getCachedAudioUrl(audioUrl);
+
+    return fetch(cachedUrl)
+        .then(data => addUrlToCache(audioUrl, data))
+        .then(data => data.arrayBuffer())
+        .then(buffer => audioContext.decodeAudioData(buffer))
+        .then(decoded => generateWaveform(urlNoExtension, decoded))
+        .catch(error => {
+            stopAudio(lastPlaystate);
+        })
+}
+
+function generateWaveform(id, data) {
     const channelData = data.getChannelData(0);
     const samples = 200;
     const blockSize = Math.floor(channelData.length / samples);
@@ -278,7 +300,7 @@ function drawWaveformPart(waveform, ctx, width, height, color) {
     ctx.beginPath();
 
     waveform.forEach((value, index) => {
-        const x = (index / waveform.length) * width;
+        const x = (index / (waveform.length - 1)) * width;
         const amplitude = value * height;
 
         ctx.moveTo(x, centerY - amplitude / 2);
