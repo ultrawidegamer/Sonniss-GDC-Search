@@ -157,18 +157,6 @@
         
         .main {
             display: grid;
-            grid-template-columns: minmax(200px, 400px) minmax(400px, 1fr);
-            gap: 8px;
-
-            .filter {
-                border-radius: 10px;
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr 1fr;
-                padding: 10px;
-                margin: 8px 0px 0px 0px;
-                width: 100%;
-                background-color: hsl(from var(--background-color) h calc(s - 20) calc(l + 5));
-            }
 
             .results {
                 display: grid;
@@ -413,6 +401,7 @@
                     border-radius: 999px;
                     transform: translateX(-50%);
                     display: var(--waveform-display);
+                    pointer-events: none;
                 }
             }
 

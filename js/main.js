@@ -16,6 +16,8 @@ let currentWaveform;
 let lastProgress = 0;
 let lastPlaystate;
 let resumeTime = 0;
+let seeking = false;
+let hasSeeked = false;
 
 const debounce = (func, delay) => {
     let timer;
@@ -28,13 +30,25 @@ const debounce = (func, delay) => {
     };
 }
 
-waveformCanvas.addEventListener("click", seekAudio);
 titleButton.addEventListener("click", scrollToTop);
 searchInput.addEventListener("input", debounce(searchTracklists, 500));
 audioPlayer.addEventListener("play", () => playAudio(lastPlaystate));
 audioPlayer.addEventListener("pause", () => pauseAudio(lastPlaystate));
 audioPlayer.addEventListener("loadeddata", () => startAudio());
 audioPlayer.addEventListener("ended", () => stopAudio(lastPlaystate));
+waveformCanvas.addEventListener("pointerdown", startSeek);
+waveformCanvas.addEventListener("pointermove", seekAudio);
+waveformCanvas.addEventListener("pointerup", endSeek);
+waveformCanvas.addEventListener("click", e => {
+    if (hasSeeked) {
+        hasSeeked = false;
+        return;
+    }
+
+    startSeek(e);
+    seekAudio(e);
+    endSeek(e);
+});
 
 function searchTracklists() {
     const searchTerm = searchInput.value.trim().toLowerCase();
@@ -201,14 +215,32 @@ function stopAudio(state) {
     lastPlaystate = undefined;
 }
 
-function seekAudio (e) {
-    if (!audioPlayer?.duration) return;
+function startSeek(e) {
+    hasSeeked = false;
+    seeking = true;
+    waveformCanvas.setPointerCapture(e.pointerId)
+}
 
-    resumeTime = (audioPlayer.duration * (e.offsetX / waveformCanvas.clientWidth));
+function seekAudio (e) {
+    if (!seeking || !audioPlayer?.duration) return;
+
+    hasSeeked = true;
+
+    resumeTime = audioPlayer.duration * (e.offsetX / waveformCanvas.clientWidth);
+    resumeTime = Math.min(resumeTime, audioPlayer.duration);
+    resumeTime = Math.max(resumeTime, 0);
+
     audioPlayer.currentTime = resumeTime;
 
     if (audioPlayer.paused) {
         updateProgressVisual(resumeTime / audioPlayer.duration);
+    }
+}
+
+function endSeek(e) {
+    seeking = false;
+    if (waveformCanvas.hasPointerCapture(e.pointerId)) {
+        waveformCanvas.releasePointerCapture(e.pointerId);
     }
 }
 
