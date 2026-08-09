@@ -7,6 +7,7 @@ const audioPlayer = document.querySelector(".playback > audio");
 const audioWaveform = document.querySelector(".waveform");
 const waveformCanvas = document.querySelector(".waveform > canvas");
 const downloadButton = document.querySelector(".download");
+const titleButton = document.querySelector(".titlebar > .title");
 const scroller = createInfiniteScroller(contentHolder);
 const audioContext = new AudioContext();
 const waveformStore = {};
@@ -27,10 +28,12 @@ const debounce = (func, delay) => {
     };
 }
 
+waveformCanvas.addEventListener("click", seekAudio);
+titleButton.addEventListener("click", scrollToTop);
 searchInput.addEventListener("input", debounce(searchTracklists, 500));
 audioPlayer.addEventListener("play", () => playAudio(lastPlaystate));
 audioPlayer.addEventListener("pause", () => pauseAudio(lastPlaystate));
-audioPlayer.addEventListener("canplaythrough", () => startAudio());
+audioPlayer.addEventListener("loadeddata", () => startAudio());
 audioPlayer.addEventListener("ended", () => stopAudio(lastPlaystate));
 
 function searchTracklists() {
@@ -198,6 +201,17 @@ function stopAudio(state) {
     lastPlaystate = undefined;
 }
 
+function seekAudio (e) {
+    if (!audioPlayer?.duration) return;
+
+    resumeTime = (audioPlayer.duration * (e.offsetX / waveformCanvas.clientWidth));
+    audioPlayer.currentTime = resumeTime;
+
+    if (audioPlayer.paused) {
+        updateProgressVisual(resumeTime / audioPlayer.duration);
+    }
+}
+
 function generateWaveformAndPlay(state, urlNoExtension) {
     const audioUrl = `${urlNoExtension}.mp3`;
 
@@ -310,13 +324,17 @@ function drawWaveformPart(waveform, ctx, width, height, color) {
     ctx.stroke();
 }
 
+function updateProgressVisual(progress) {
+    drawWaveform(currentWaveform, waveformCanvas, progress);
+    lastProgress = progress;
+    audioWaveform.style.setProperty('--progress', `${progress*100}%`);
+}
+
 function updateWaveformProgress() {
     const progress = audioPlayer.currentTime / audioPlayer.duration;
 
     if (Math.abs(progress - lastProgress) > 0.002) {
-        drawWaveform(currentWaveform, waveformCanvas, progress);
-        lastProgress = progress;
-        audioWaveform.style.setProperty('--progress', `${progress*100}%`);
+        updateProgressVisual(progress)
     }
 
     if (!audioPlayer.paused && !audioPlayer.ended) {
@@ -328,6 +346,14 @@ function cleanTitle(title) {
     return title
         .slice(0, -4)
         .replace(/[_\-./\\]+/g, " ")
+}
+
+function scrollToTop() {
+    contentHolder.firstChild.scrollIntoView();
+
+    if (contentHolder.firstChild.nextSibling.hidden) {
+        setTimeout(scrollToTop, 50);
+    }
 }
 
 function createInfiniteScroller(scrollEl, chunkSize = 200) {
