@@ -8,6 +8,9 @@ const audioWaveform = document.querySelector(".waveform");
 const waveformCanvas = document.querySelector(".waveform > canvas");
 const downloadButton = document.querySelector(".download");
 const titleButton = document.querySelector(".titlebar > .title");
+const audioName = audioWrapper.querySelector(".name");
+const audioLibrary = audioWrapper.querySelector(".library");
+const audioCreator = audioWrapper.querySelector(".creator");
 const scroller = createInfiniteScroller(contentHolder);
 const audioContext = new AudioContext();
 const waveformStore = {};
@@ -135,6 +138,10 @@ function createScrollItem(year, data) {
         .replaceAll("%2F", "/")
         .slice(0, -4);
     
+    const name = cleanTitle(data[0]);
+    const library = data[1];
+    const creator = data[2];
+
     item.classList.add('item')
     item.innerHTML = `
         <div class="playstate">
@@ -143,13 +150,13 @@ function createScrollItem(year, data) {
             <div class="loadingspinner"></div>
         </div>
         <div class="trackname">
-            <div class="text">${cleanTitle(data[0])}</div>
+            <div class="text">${name}</div>
         </div>
         <div class="tracklibrary">
-            <div class="text">${data[1]}</div>
+            <div class="text">${library}</div>
         </div>
         <div class="trackcreator">
-            <div class="text">${data[2]}</div>
+            <div class="text">${creator}</div>
         </div>
     `
 
@@ -163,6 +170,10 @@ function createScrollItem(year, data) {
                 audioPlayer.pause()
             }
         } else {
+            audioName.textContent = name;
+            audioLibrary.textContent = library;
+            audioCreator.textContent = creator;
+
             generateWaveformAndPlay(state, urlNoExtension);
         }  
     })
