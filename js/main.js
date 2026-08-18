@@ -175,6 +175,10 @@ function createScrollItem(year, data) {
                 audioPlayer.pause()
             }
         } else {
+            audioName.textContent = name;
+            audioLibrary.textContent = library;
+            audioCreator.textContent = creator;
+
             generateWaveformAndPlay(state, urlNoExtension);
             libraryButton.href = data[3];
         }  
