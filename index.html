@@ -10,6 +10,7 @@
             --background-color: hsl(210deg 60% 5%);
             --primary-color: hsl(250deg 80% 60%);
             --text-color: hsl(0deg 0% 90%);
+            --text-color-hover: hsl(from var(--text-color) h s calc(l - 10));
             --panel-background: hsl(from var(--background-color) h calc(s - 20) calc(l + 5));
             --panel-shadow: -2px 2px 10px hsl(from var(--background-color) h s calc(l - 5) / 50%);
         }
@@ -196,9 +197,6 @@
                 }
 
                 > .info {
-                    --secondary-text-color: hsl(from var(--text-color) h s calc(l - 30));
-                    --secondary-text-color-hover: hsl(from var(--text-color) h s calc(l - 10));
-
                     display: flex;
                     flex-direction: column;
                     height: 100%;
@@ -212,13 +210,13 @@
                     }
 
                     a {
-                        color: var(--secondary-text-color);
+                        color: var(--text-color);
                         text-decoration: underline;
                         text-underline-offset: 2px;
                         cursor: pointer;
 
                         &:hover {
-                            color: var(--secondary-text-color-hover);
+                            color: var(--text-color-hover);
                         }
                     }
 
@@ -229,16 +227,16 @@
                         button {
                             padding: 5px 10px;
 
-                            color: var(--secondary-text-color);
+                            color: var(--text-color);
                             font-size: 0.85em;
                             background: transparent;
-                            border: 1px solid var(--secondary-text-color);
+                            border: 1px solid var(--text-color);
                             border-radius: 5px;
                             cursor: pointer;
 
                             &:hover {
-                                color: var(--secondary-text-color-hover);
-                                border-color: var(--secondary-text-color-hover);
+                                color: var(--text-color-hover);
+                                border-color: var(--text-color-hover);
                             }
                         }
                     }
@@ -425,7 +423,7 @@
             margin-top: 0px;
             transition: height 0.1s ease;
             background: var(--panel-background);
-            grid-template-columns: minmax(200px, 400px) minmax(300px, 1000px) minmax(200px, 400px);
+            grid-template-columns: minmax(200px, 400px) minmax(400px, 1000px) 150px;
             gap: 8px;
             
             > .left {
@@ -481,7 +479,7 @@
     
                 > canvas {
                     display: block;
-                    height: 30px;
+                    height: 80px;
                     width: 100%;
                 }
     
@@ -507,8 +505,8 @@
                 .icon {
                     --line-size: 3px;
                     position: relative;
-                    width: 40px;
-                    height: 15px;
+                    width: 35px;
+                    height: 12px;
                     border: var(--line-size) solid var(--text-color);
                     border-top: none;
                     border-radius: 0 0 var(--line-size) var(--line-size);
@@ -523,18 +521,18 @@
                     }
 
                     &::before {
-                        left: 50%;
-                        top: -21px;
+                        left: calc(50% - 1px);
+                        top: -18px;
                         width: var(--line-size);
-                        height: 22px;
+                        height: 18px;
                         background: var(--text-color);
                     }
 
                     &::after {
                         left: calc(50% - 3px);
                         top: -11px;
-                        width: 15px;
-                        height: 15px;
+                        width: 12px;
+                        height: 12px;
                         border-right: var(--line-size) solid var(--text-color);
                         border-bottom: var(--line-size) solid var(--text-color);
                         rotate: 45deg;
@@ -543,8 +541,57 @@
             }
 
             .menu {
-                padding: 37px;
                 cursor: pointer;
+                display: flex;
+                flex-direction: column-reverse;
+                
+                &::details-content { 
+                    width: 0; 
+                    height: 0; 
+                    overflow: hidden;    
+                }
+
+                > .buttons {
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+
+                    a {
+                        display: flex;
+                        flex: auto;
+                        padding: 5px 10px;
+                        text-decoration: none;
+
+                        color: var(--text-color);
+                        font-size: 0.85em;
+                        background: transparent;
+                        border: 1px solid var(--text-color);
+                        border-radius: 5px;
+                        cursor: pointer;
+                        justify-content: center;
+                        align-items: center;
+
+                        &:hover {
+                            color: var(--text-color-hover);
+                            border-color: var(--text-color-hover);
+                        }
+                    }
+                }
+
+                > summary {
+                    list-style: none;                  
+                    user-select: none;
+                    position: relative;
+                    cursor: pointer;
+                    padding: 32px;
+                    display: flex;
+                    justify-content: end;
+                    
+                    &::marker {
+                        content: "";
+                    }
+                }
 
                 .icon {
                     position: relative;
@@ -565,11 +612,36 @@
                     }
                     
                     &::before {
-                        top: -12px;
+                        top: -10px;
                     }
             
                     &::after {
-                        top: 12px;
+                        top: 10px;
+                    }
+                }
+
+                &:open {
+                    position: absolute;
+                    bottom: 10px;
+                    right: 11px;
+                    background-color: var(--panel-background);
+                    outline: 1px solid hsl(from var(--background-color) h calc(s - 20) calc(l + 10));
+                    border-radius: 10px;
+                    padding: 10px;
+                    box-shadow: var(--panel-shadow);
+                    
+                    &::details-content {
+                        --width-multiplier: 1.2;
+                        --width-speed: 100ms;
+                        --height: 250px;
+                        
+                        transition: width var(--width-speed) ease, height calc(var(--width-speed) * var(--width-multiplier)) ease;
+                        width: calc(var(--height) * var(--width-multiplier));
+                        height: var(--height);
+                    }
+
+                    > summary {
+                        margin: 3px 9px;
                     }
                 }
             }
@@ -610,24 +682,24 @@
         <details class="about">
             <summary>About</summary>
             <div class="info">
-            <div class="text">Unofficial website for browsing the Sonniss GDC audio bundles</div>
-            <a href="https://github.com/ultrawidegamer" target="_blank">
-                Created by ultrawidegamer
-            </a>
-            <div>
-                Audio files are hosted by the
-                <a href="https://archive.org/details/@ultrawide_gamer?query=gdc+sonniss&sort=-title" target="_blank">
-                    Internet Archive
+                <div class="text">Unofficial website for browsing the Sonniss GDC audio bundles</div>
+                <a href="https://github.com/ultrawidegamer" target="_blank">
+                    Created by ultrawidegamer
                 </a>
-            </div>
-            <div class="buttons">
-                <button onclick="window.open('https://github.com/ultrawidegamer/Sonniss-GDC-Search', '_blank')">
-                    GitHub Repo
-                </button>
-                <button onclick="window.open('https://gdc.sonniss.com', '_blank')">
-                    Sonniss GDC
-                </button>
-            </div>
+                <div>
+                    Audio files are hosted by the
+                    <a href="https://archive.org/details/@ultrawide_gamer?query=gdc+sonniss&sort=-title" target="_blank">
+                        Internet Archive
+                    </a>
+                </div>
+                <div class="buttons">
+                    <button onclick="window.open('https://github.com/ultrawidegamer/Sonniss-GDC-Search', '_blank')">
+                        GitHub Repo
+                    </button>
+                    <button onclick="window.open('https://gdc.sonniss.com', '_blank')">
+                        Sonniss GDC
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -666,9 +738,28 @@
             <a class="download" target="_blank">
                 <div class="icon"></div>
             </a>
-            <div class="menu">
-                <div class="icon"></div>
-            </div>
+            <details class="menu">
+                <div class="buttons">
+                    <a class="downloadwav" target="_blank">
+                        Download Wav
+                    </a>
+                    <a class="downloadflac" target="_blank">
+                        Download Flac
+                    </a>
+                    <a class="viewwaveform" target="_blank">
+                        View Waveform
+                    </a>
+                    <a class="viewspectrogram" target="_blank">
+                        View Spectrogram
+                    </a>
+                    <a class="openlibrary" target="_blank">
+                        Open Library
+                    </a>
+                </div>
+                <summary>
+                    <div class="icon"></div>
+                </summary>
+            </details>
         </div>
     </div>
     <script defer src="./js/main.js"></script>

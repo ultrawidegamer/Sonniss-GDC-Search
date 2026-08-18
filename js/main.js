@@ -7,6 +7,11 @@ const audioPlayer = document.querySelector(".playback > audio");
 const audioWaveform = document.querySelector(".waveform");
 const waveformCanvas = document.querySelector(".waveform > canvas");
 const downloadButton = document.querySelector(".download");
+const wavButton = document.querySelector(".downloadwav");
+const flacButton = document.querySelector(".downloadflac");
+const waveformButton = document.querySelector(".viewwaveform");
+const spectrogramButton = document.querySelector(".viewspectrogram");
+const libraryButton = document.querySelector(".openlibrary");
 const titleButton = document.querySelector(".titlebar > .title");
 const audioName = audioWrapper.querySelector(".name");
 const audioLibrary = audioWrapper.querySelector(".library");
@@ -170,11 +175,8 @@ function createScrollItem(year, data) {
                 audioPlayer.pause()
             }
         } else {
-            audioName.textContent = name;
-            audioLibrary.textContent = library;
-            audioCreator.textContent = creator;
-
             generateWaveformAndPlay(state, urlNoExtension);
+            libraryButton.href = data[3];
         }  
     })
     
@@ -268,6 +270,7 @@ function generateWaveformAndPlay(state, urlNoExtension) {
     fetchWaveformData(urlNoExtension)
         .then(waveform => {
             const cachedUrl = getCachedAudioUrl(audioUrl);
+            urlNoExtension = cachedUrl.slice(0, -4);
 
             currentWaveform = waveform;
             drawWaveform(waveform, waveformCanvas, 0);
@@ -275,6 +278,11 @@ function generateWaveformAndPlay(state, urlNoExtension) {
             audioWrapper.classList.add("played");
             audioPlayer.src = cachedUrl;
             downloadButton.href = cachedUrl;
+
+            wavButton.href = `${urlNoExtension}.wav`;
+            flacButton.href = `${urlNoExtension}.flac`;
+            waveformButton.href = `${urlNoExtension}.png`;
+            spectrogramButton.href = `${urlNoExtension}_spectrogram.png`;
         })
         .catch(error => {
             stopAudio(lastPlaystate);
