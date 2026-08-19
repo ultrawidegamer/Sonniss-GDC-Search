@@ -134,6 +134,8 @@
             }
 
             .about {
+                z-index: 1;
+
                 &::details-content { 
                     width: 0; 
                     height: 0; 
@@ -153,7 +155,7 @@
                     &::details-content {
                         --width-multiplier: 2;
                         --width-speed: 100ms;
-                        --height: 170px;
+                        --height: 160px;
                         
                         transition: width var(--width-speed) ease, height calc(var(--width-speed) * var(--width-multiplier)) ease;
                         width: calc(var(--height) * var(--width-multiplier));
@@ -540,6 +542,10 @@
                 }
             }
 
+            .downloadmobile {
+                display: none;
+            }
+
             .menu {
                 cursor: pointer;
                 display: flex;
@@ -647,6 +653,74 @@
             }
         }
 
+        @media (max-width: 850px) {
+            .titlebar {
+                grid-template-columns: none;
+                height: 100px;
+                margin-bottom: 5px;
+                padding: 0px;
+
+                .title {
+                    justify-content: left;
+                    margin-left: 20px;
+                }
+
+                .about {
+                    position: absolute;
+                    top: 10px;
+                    right: 11px;
+
+                    &:open {
+                        > summary {
+                            padding-right: 21px;
+                            margin-bottom: 0px;
+                            margin-top: 7px;
+                        }
+                    }
+                }
+            }
+
+            .main {
+                .results {
+                    :is(.item, .columns) {
+                        grid-template-columns: 50px 1fr 1fr 1fr 1fr;
+                    }
+                }
+            }
+            
+            .audio {
+                grid-template-columns: 100px 1fr 70px;
+                gap: 2px;
+
+                .download {
+                    display: none;
+                }
+
+                .downloadmobile {
+                    display: flex;
+                }
+
+                &.played {
+                    padding: 10px 10px;
+                }
+
+                .menu {
+                    &:open {
+                        > summary {
+                            margin: 3px -1px;
+                        }
+                    }
+                }
+            }
+        }
+
+        @media (max-width: 400px) {
+            .titlebar {
+                .title {
+                    width: 200px;
+                }
+            }
+        }
 
         @keyframes loading-spin {
             to {
@@ -740,6 +814,9 @@
             </a>
             <details class="menu">
                 <div class="buttons">
+                    <a class="downloadmobile" target="_blank">
+                        Download Mp3
+                    </a>
                     <a class="downloadwav" target="_blank">
                         Download Wav
                     </a>

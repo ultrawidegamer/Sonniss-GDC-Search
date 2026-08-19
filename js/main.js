@@ -7,6 +7,7 @@ const audioPlayer = document.querySelector(".playback > audio");
 const audioWaveform = document.querySelector(".waveform");
 const waveformCanvas = document.querySelector(".waveform > canvas");
 const downloadButton = document.querySelector(".download");
+const downloadMobileButton = document.querySelector(".downloadmobile");
 const wavButton = document.querySelector(".downloadwav");
 const flacButton = document.querySelector(".downloadflac");
 const waveformButton = document.querySelector(".viewwaveform");
@@ -282,6 +283,7 @@ function generateWaveformAndPlay(state, urlNoExtension) {
             audioWrapper.classList.add("played");
             audioPlayer.src = cachedUrl;
             downloadButton.href = cachedUrl;
+            downloadMobileButton.href = cachedUrl;
 
             wavButton.href = `${urlNoExtension}.wav`;
             flacButton.href = `${urlNoExtension}.flac`;
