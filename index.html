@@ -541,10 +541,6 @@
                 }
             }
 
-            .downloadmobile {
-                display: none;
-            }
-
             .menu {
                 cursor: pointer;
                 display: flex;
@@ -581,6 +577,10 @@
                             color: var(--text-color-hover);
                             border-color: var(--text-color-hover);
                         }
+                    }
+         
+                    .downloadmobile {
+                        display: none;
                     }
                 }
 
@@ -695,18 +695,18 @@
                     display: none;
                 }
 
-                .downloadmobile {
-                    display: flex;
-                }
-
+                
                 &.played {
                     padding: 10px 10px;
                 }
-
+                
                 .menu {
                     &:open {
                         > summary {
                             margin: 3px -1px;
+                        }
+                        .downloadmobile {
+                            display: flex;
                         }
                     }
                 }
